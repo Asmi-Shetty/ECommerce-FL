@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="bg-cream-100 flex flex-col min-h-screen text-slate-800 antialiased selection:bg-organic-200 selection:text-organic-900">
+      <body className="bg-cream-100 dark:bg-slate-950 flex flex-col min-h-screen text-slate-800 dark:text-slate-100 antialiased selection:bg-organic-200 selection:text-organic-900">
         <Providers>
           <Navbar />
           <main className="flex-grow pt-20">

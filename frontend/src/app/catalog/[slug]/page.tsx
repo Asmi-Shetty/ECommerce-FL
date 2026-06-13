@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '@/store/slices/cartSlice';
@@ -34,8 +34,7 @@ interface ProductDetail {
 }
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = use(params);
-  const slug = resolvedParams.slug;
+  const [slug, setSlug] = useState<string | null>(null);
   const dispatch = useDispatch();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
@@ -45,6 +44,14 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
+    Promise.resolve(params).then((resolved) => {
+      setSlug(resolved.slug);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!slug) return;
+
     const fetchProductDetails = async () => {
       setLoading(true);
       try {
