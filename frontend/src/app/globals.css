@@ -90,3 +90,74 @@
   border-color: #246327 !important;
 }
 
+/* --- Premium Animations & Effects --- */
+
+/* Typewriter Blinking Cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 0.75s step-end infinite;
+}
+
+/* Floating leaves animations */
+@keyframes float-leaf-1 {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.15; }
+  50% { transform: translateY(-25px) rotate(30deg); opacity: 0.3; }
+  100% { transform: translateY(0px) rotate(0deg); opacity: 0.15; }
+}
+
+@keyframes float-leaf-2 {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
+  50% { transform: translateY(-35px) rotate(-20deg); opacity: 0.25; }
+  100% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
+}
+
+@keyframes float-leaf-3 {
+  0% { transform: translateY(0px) rotate(0deg) scale(0.9); opacity: 0.1; }
+  50% { transform: translateY(-15px) rotate(45deg) scale(1.1); opacity: 0.35; }
+  100% { transform: translateY(0px) rotate(0deg) scale(0.9); opacity: 0.1; }
+}
+
+.animate-float-leaf-1 {
+  animation: float-leaf-1 8s ease-in-out infinite;
+}
+
+.animate-float-leaf-2 {
+  animation: float-leaf-2 10s ease-in-out infinite;
+}
+
+.animate-float-leaf-3 {
+  animation: float-leaf-3 12s ease-in-out infinite;
+}
+
+/* Card hover shine sweep effect */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: 0.8s ease;
+}
+
+.group:hover .card-shine::after {
+  left: 150%;
+}
+
+

@@ -84,8 +84,8 @@ export default function Navbar() {
               <Leaf className="h-6 w-6" />
             </div>
             <div>
-              <span className="font-serif text-xl font-bold text-organic-700 tracking-tight">Nashik Organic</span>
-              <span className="block text-[10px] tracking-widest text-earth-500 uppercase font-sans font-bold -mt-1">Express</span>
+              <span className="font-serif text-xl font-bold text-organic-700 tracking-tight">Krishna Organic</span>
+              <span className="block text-[10px] tracking-widest text-earth-500 uppercase font-sans font-bold -mt-1">& Exotic Farming</span>
             </div>
           </Link>
 

@@ -1,7 +1,7 @@
 {
-  "name": "nashik-organic-express-backend",
+  "name": "krishna-organic-exotic-farming-backend",
   "version": "1.0.0",
-  "description": "Backend API for Nashik Organic Vegetables Delivery Platform",
+  "description": "Backend API for Krishna Organic & Exotic Farming Platform",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",

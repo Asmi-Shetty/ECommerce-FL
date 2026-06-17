@@ -6,9 +6,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Nashik Organic Express - Fresh Pesticide-Free Vegetables',
+  title: 'Krishna Organic & Exotic Farming - Fresh Pesticide-Free Vegetables',
   description:
-    'Order farm-fresh organic vegetables online in Nashik. Directly sourced from certified organic farmers in Niphad & Sinnar. Doorstep delivery.',
+    'Order farm-fresh organic and exotic vegetables online. Directly sourced from certified organic farmers. Doorstep delivery.',
 };
 
 export default function RootLayout({

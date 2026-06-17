@@ -34,9 +34,9 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       phone: '9999999999',
-      email: 'admin@nashikorganic.com',
+      email: 'admin@krishnaorganic.com',
       passwordHash,
-      name: 'Nashik Organic Admin',
+      name: 'Krishna Organic Admin',
       role: 'ADMIN',
       isVerified: true
     }

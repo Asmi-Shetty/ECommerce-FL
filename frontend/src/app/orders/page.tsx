@@ -79,7 +79,7 @@ function OrdersContent() {
   }, [isAuthenticated, router, token, successId]);
 
   const handleDownloadInvoice = (order: Order) => {
-    alert(`\nInvoice downloaded for Order: ${order.orderNumber}\nFile: Nashik_Organic_Invoice_${order.orderNumber}.pdf`);
+    alert(`\nInvoice downloaded for Order: ${order.orderNumber}\nFile: Krishna_Organic_Invoice_${order.orderNumber}.pdf`);
   };
 
   const getStatusStep = (status: string) => {
@@ -107,7 +107,7 @@ function OrdersContent() {
           <div className="space-y-1">
             <h2 className="text-2xl font-serif font-bold">Order Confirmed Successfully!</h2>
             <p className="text-xs text-organic-100 font-medium">
-              Thank you for choosing Nashik Organic. Your order ID is <span className="font-bold">{activeOrder.orderNumber}</span>.
+              Thank you for choosing Krishna Organic & Exotic Farming. Your order ID is <span className="font-bold">{activeOrder.orderNumber}</span>.
             </p>
           </div>
           <p className="text-[11px] text-organic-200">

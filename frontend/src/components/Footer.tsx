@@ -25,8 +25,8 @@ export default function Footer() {
                 <Leaf className="h-6 w-6" />
               </div>
               <div>
-                <span className="font-serif text-xl font-bold text-white tracking-tight">Nashik Organic</span>
-                <span className="block text-[10px] tracking-widest text-organic-400 uppercase font-sans font-bold -mt-1">Express</span>
+                <span className="font-serif text-xl font-bold text-white tracking-tight">Krishna Organic</span>
+                <span className="block text-[10px] tracking-widest text-organic-400 uppercase font-sans font-bold -mt-1">& Exotic Farming</span>
               </div>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-6">
@@ -39,7 +39,7 @@ export default function Footer() {
               </span>
               <span className="flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5 text-organic-400" />
-                info@nashikorganic.com
+                info@krishnaorganic.com
               </span>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function Footer() {
           <div>
             <h3 className="font-serif text-lg font-bold text-white mb-4">Download App</h3>
             <p className="text-sm text-slate-400 mb-4 leading-relaxed">
-              Order on the go! Scan the QR or click below to install the Nashik Organic Android/iOS app (Coming soon).
+              Order on the go! Scan the QR or click below to install the Krishna Organic & Exotic Farming Android/iOS app (Coming soon).
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="bg-slate-800 border border-slate-700 rounded-lg p-2.5 flex items-center gap-2 cursor-pointer hover:bg-slate-750 transition-colors">
@@ -114,7 +114,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} Nashik Organic Express. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Krishna Organic & Exotic Farming. All rights reserved.</p>
           <p className="flex items-center gap-1">
             Grown with <Heart className="h-3.5 w-3.5 text-organic-500 fill-organic-500" /> in Nashik fields
           </p>

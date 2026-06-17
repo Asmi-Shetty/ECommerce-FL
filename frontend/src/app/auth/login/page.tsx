@@ -87,7 +87,7 @@ export default function LoginPage() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1 bg-organic-50 text-organic-700 px-3 py-1 rounded-full text-[10px] font-bold border border-organic-200">
             <Sparkles className="h-3 w-3" />
-            <span>Nashik Organic Sourcing</span>
+            <span>Krishna Organic Sourcing</span>
           </div>
           <h2 className="text-3xl font-extrabold text-slate-900 font-serif">Welcome Back</h2>
           <p className="text-xs text-slate-500">

@@ -19,7 +19,7 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    message: 'Nashik Organic Express API is operational'
+    message: 'Krishna Organic & Exotic Farming API is operational'
   });
 });
 

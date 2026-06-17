@@ -67,7 +67,7 @@ export default function SignupPage() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1 bg-organic-50 text-organic-700 px-3 py-1 rounded-full text-[10px] font-bold border border-organic-200">
             <Sparkles className="h-3 w-3" />
-            <span>Join Nashik Organic</span>
+            <span>Join Krishna Organic</span>
           </div>
           <h2 className="text-3xl font-extrabold text-slate-900 font-serif">Create Account</h2>
           <p className="text-xs text-slate-500 font-sans">

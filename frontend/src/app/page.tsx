@@ -37,26 +37,73 @@ export default function LandingPage() {
 
   const heroDishes = [
     {
-      name: 'Fresh Harvest Salad',
-      image: '/dish1.png',
+      name: 'Fresh Organic Spinach',
+      image: '/produce1.png',
     },
     {
-      name: 'Vibrant Avocado Quinoa Bowl',
-      image: '/dish2.png',
+      name: 'Sun-Ripened Desi Tomatoes',
+      image: '/produce2.png',
     },
     {
-      name: 'Roasted Root & Beet Medley',
-      image: '/dish3.png',
+      name: 'Vibrant Bell Peppers',
+      image: '/produce3.png',
     },
     {
-      name: 'Exotic Fruit & Herb Plate',
-      image: '/dish4.png',
+      name: 'Crunchy Sinnar Carrots',
+      image: '/produce4.png',
     },
     {
-      name: 'Caprese Tomato Basil Salad',
-      image: '/dish5.png',
+      name: 'Farm-Fresh Citrus Fruits',
+      image: '/produce5.png',
     }
   ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDishIndex((prev) => (prev + 1) % heroDishes.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [heroDishes.length]);
+
+  const [typedText, setTypedText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loopNum, setLoopNum] = useState(0);
+  const [typingSpeed, setTypingSpeed] = useState(100);
+
+  const phrases = [
+    'Delivered to Nashik',
+    'Krishna Organic & Exotic Farming',
+    '100% Pesticide-Free Sourced',
+    'Direct from Certified Farmers',
+    'Harvested Daily at Dawn'
+  ];
+
+  useEffect(() => {
+    const handleTyping = () => {
+      const currentIdx = loopNum % phrases.length;
+      const fullText = phrases[currentIdx];
+
+      if (isDeleting) {
+        setTypedText(fullText.substring(0, typedText.length - 1));
+        setTypingSpeed(45);
+      } else {
+        setTypedText(fullText.substring(0, typedText.length + 1));
+        setTypingSpeed(85);
+      }
+
+      if (!isDeleting && typedText === fullText) {
+        setIsDeleting(true);
+        setTypingSpeed(2000); // Pause on complete word
+      } else if (isDeleting && typedText === '') {
+        setIsDeleting(false);
+        setLoopNum((prev) => prev + 1);
+        setTypingSpeed(300); // Pause before next word
+      }
+    };
+
+    const timer = setTimeout(handleTyping, typingSpeed);
+    return () => clearTimeout(timer);
+  }, [typedText, isDeleting, loopNum, typingSpeed]);
 
 
   // Core fallback landing page data
@@ -172,6 +219,17 @@ export default function LandingPage() {
         <div className="absolute inset-0 opacity-40 pointer-events-none">
           <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-organic-200 dark:bg-organic-850/20 blur-3xl animate-pulse-subtle"></div>
           <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-organic-300/40 dark:bg-organic-800/10 blur-3xl"></div>
+          
+          {/* Floating Sprout elements */}
+          <div className="absolute top-[20%] left-[8%] text-organic-400/30 dark:text-organic-600/10 animate-float-leaf-1">
+            <Sprout className="h-10 w-10 rotate-12" />
+          </div>
+          <div className="absolute bottom-[35%] left-[22%] text-organic-500/25 dark:text-organic-500/10 animate-float-leaf-2">
+            <Sprout className="h-12 w-12 -rotate-12" />
+          </div>
+          <div className="absolute top-[18%] right-[18%] text-organic-450/25 dark:text-organic-600/10 animate-float-leaf-3">
+            <Sprout className="h-8 w-8 rotate-45" />
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
@@ -182,7 +240,10 @@ export default function LandingPage() {
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-tight">
               Fresh Organic Vegetables <br />
-              <span className="text-organic-600 dark:text-organic-400 font-serif italic font-normal">Delivered to Nashik</span>
+              <span className="text-organic-600 dark:text-organic-400 font-serif italic font-normal inline-flex items-center min-h-[1.2em]">
+                {typedText}
+                <span className="ml-1.5 inline-block w-1.5 h-[0.85em] bg-organic-550 dark:bg-organic-400 animate-blink rounded-sm shrink-0"></span>
+              </span>
             </h1>
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
               Harvested at dawn, delivered by noon. Experience the true taste of natural, nutrient-dense greens sourced from verified growers in Niphad, Sinnar & Dindori.
@@ -222,7 +283,6 @@ export default function LandingPage() {
           <div className="lg:col-span-5 relative flex justify-center animate-fade-in">
             <div className="animate-float">
               <div 
-                onMouseEnter={() => setCurrentDishIndex((prev) => (prev + 1) % heroDishes.length)}
                 className="relative w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-organic-500 overflow-hidden shadow-2xl border-8 hover:border-[16px] border-white dark:border-slate-900 cursor-pointer transition-all duration-500 ease-out hover:scale-110 hover:animate-[spin_20s_linear_infinite]"
               >
                 {heroDishes.map((dish, idx) => (
@@ -326,11 +386,12 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((cat) => (
+            {categories.map((cat, idx) => (
               <Link
                 key={cat.id}
                 href={`/catalog?category=${cat.slug}`}
-                className="group relative h-72 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-end p-6 border-4 border-white dark:border-slate-900"
+                className="group relative h-72 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-end p-6 border-4 border-white dark:border-slate-900 card-shine animate-slide-up"
+                style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'both' }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent z-10"></div>
                 <img
@@ -355,17 +416,18 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map((prod) => (
+            {featuredProducts.map((prod, idx) => (
               <div
                 key={prod.id}
-                className="group bg-cream-50 dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-100 dark:border-slate-800 hover:border-organic-200/50 dark:hover:border-organic-500/50 transition-all duration-300 flex flex-col justify-between"
+                className="group bg-cream-50 dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-100 dark:border-slate-800 hover:border-organic-200/50 dark:hover:border-organic-500/50 transition-all duration-300 flex flex-col justify-between animate-slide-up"
+                style={{ animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }}
               >
                 {/* Image */}
-                <div className="relative h-48 bg-slate-100 dark:bg-slate-850 overflow-hidden">
+                <div className="relative h-48 bg-slate-100 dark:bg-slate-850 overflow-hidden card-shine">
                   <img
                     src={prod.imageUrl}
                     alt={prod.name}
-                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-3 left-3 bg-organic-500 text-white font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">
                     {prod.certification}
@@ -430,7 +492,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 relative">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 relative animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
               <div className="flex justify-center gap-1 text-amber-500 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-amber-500" />
@@ -450,7 +512,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 relative">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 relative animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
               <div className="flex justify-center gap-1 text-amber-500 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-amber-500" />
@@ -470,7 +532,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 relative">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 relative animate-slide-up" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
               <div className="flex justify-center gap-1 text-amber-500 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-amber-500" />
