@@ -19,6 +19,7 @@ interface Product {
   category: { name: string; slug: string };
   farmer: { farmName: string; location: string; user: { name: string } };
   images: Array<{ url: string }>;
+  inventory?: { stockLevel: number } | null;
 }
 
 function CatalogContent() {
@@ -37,6 +38,7 @@ function CatalogContent() {
   const [searchText, setSearchText] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState<number>(250);
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [addedItem, setAddedItem] = useState<string | null>(null);
 
@@ -66,6 +68,7 @@ function CatalogContent() {
         if (searchText) queryParams.append('search', searchText);
         queryParams.append('sortBy', sortBy);
         queryParams.append('maxPrice', priceRange.toString());
+        if (inStockOnly) queryParams.append('inStock', 'true');
 
         const prodRes = await fetch(`http://localhost:5000/api/products?${queryParams.toString()}`);
         const prodData = await prodRes.json();
@@ -77,7 +80,8 @@ function CatalogContent() {
             const matchesCat = !selectedCategory || p.category.slug === selectedCategory;
             const matchesSearch = !searchText || p.name.toLowerCase().includes(searchText.toLowerCase());
             const matchesPrice = (p.discountPrice || p.price) <= priceRange;
-            return matchesCat && matchesSearch && matchesPrice;
+            const matchesStock = !inStockOnly || !p.inventory || p.inventory.stockLevel > 0;
+            return matchesCat && matchesSearch && matchesPrice && matchesStock;
           }));
         }
       } catch (err) {
@@ -87,7 +91,8 @@ function CatalogContent() {
           const matchesCat = !selectedCategory || p.category.slug === selectedCategory;
           const matchesSearch = !searchText || p.name.toLowerCase().includes(searchText.toLowerCase());
           const matchesPrice = (p.discountPrice || p.price) <= priceRange;
-          return matchesCat && matchesSearch && matchesPrice;
+          const matchesStock = !inStockOnly || !p.inventory || p.inventory.stockLevel > 0;
+          return matchesCat && matchesSearch && matchesPrice && matchesStock;
         });
 
         // Mock categories
@@ -104,7 +109,7 @@ function CatalogContent() {
     };
 
     loadCatalogData();
-  }, [selectedCategory, searchText, sortBy, priceRange]);
+  }, [selectedCategory, searchText, sortBy, priceRange, inStockOnly]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,21 +152,7 @@ function CatalogContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-sans">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-organic-700 to-organic-800 rounded-3xl p-8 md:p-12 text-white mb-10 text-left relative overflow-hidden shadow-md">
-        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
-          <Leaf className="w-80 h-80 rotate-12 translate-x-20 translate-y-20 text-white" />
-        </div>
-        <div className="max-w-xl space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-1 bg-organic-600 text-organic-100 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
-            <Sparkles className="h-3 w-3" /> Harvested Fresh Daily
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-serif">Nashik Veggie Catalog</h1>
-          <p className="text-sm text-organic-200 leading-relaxed">
-            Browse our wide collection of certified organic, chemical-free greens and farm produce grown right in Niphad and Sinnar fields.
-          </p>
-        </div>
-      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Filters Sidebar */}
@@ -170,12 +161,13 @@ function CatalogContent() {
             <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-1.5">
               <SlidersHorizontal className="h-4.5 w-4.5 text-organic-550" /> Filters
             </h3>
-            {(selectedCategory || searchText || priceRange < 250) && (
+            {(selectedCategory || searchText || priceRange < 250 || inStockOnly) && (
               <button
                 onClick={() => {
                   setSelectedCategory('');
                   setSearchText('');
                   setPriceRange(250);
+                  setInStockOnly(false);
                   router.push('/catalog');
                 }}
                 className="text-xs font-bold text-red-500 hover:underline"
@@ -220,6 +212,26 @@ function CatalogContent() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Availability Filter */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Availability</h4>
+            <button
+              onClick={() => setInStockOnly(!inStockOnly)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                inStockOnly
+                  ? 'bg-organic-500 text-white'
+                  : 'bg-slate-50 hover:bg-organic-50 text-slate-700 hover:text-organic-700'
+              }`}
+            >
+              <span>In-Stock Only</span>
+              <span className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                inStockOnly ? 'border-white bg-white/30' : 'border-slate-300'
+              }`}>
+                {inStockOnly && <span className="w-2 h-2 rounded-sm bg-white block" />}
+              </span>
+            </button>
           </div>
 
           {/* Price Range Filter */}
@@ -295,11 +307,18 @@ function CatalogContent() {
                     <img
                       src={prod.images[0]?.url || 'https://images.unsplash.com/photo-1540420773420-3366772f4999'}
                       alt={prod.name}
-                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                      className={`w-full h-full object-cover group-hover:scale-102 transition-transform duration-300 ${
+                        prod.inventory && prod.inventory.stockLevel <= 0 ? 'opacity-60 grayscale' : ''
+                      }`}
                     />
                     <div className="absolute top-2.5 left-2.5 bg-organic-500 text-white font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider">
                       {prod.category.name}
                     </div>
+                    {prod.inventory && prod.inventory.stockLevel <= 0 && (
+                      <div className="absolute top-2.5 right-2.5 bg-slate-800/80 text-white font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-sm">
+                        Out of Stock
+                      </div>
+                    )}
                   </div>
 
                   {/* Body */}
@@ -334,13 +353,16 @@ function CatalogContent() {
 
                       <button
                         onClick={() => handleAddToCart(prod)}
+                        disabled={!!(prod.inventory && prod.inventory.stockLevel <= 0)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
-                          addedItem === prod.id
+                          prod.inventory && prod.inventory.stockLevel <= 0
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                            : addedItem === prod.id
                             ? 'bg-organic-600 text-white'
                             : 'bg-organic-50 hover:bg-organic-500 text-organic-700 hover:text-white border border-organic-100'
                         }`}
                       >
-                        {addedItem === prod.id ? 'Added!' : 'Add'}
+                        {prod.inventory && prod.inventory.stockLevel <= 0 ? 'Unavailable' : addedItem === prod.id ? 'Added!' : 'Add'}
                       </button>
                     </div>
                   </div>

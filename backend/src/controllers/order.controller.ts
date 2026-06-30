@@ -250,3 +250,104 @@ export const getOrderById = async (req: any, res: Response): Promise<void> => {
     res.status(500).json({ error: err.message || 'Server error loading order details' });
   }
 };
+
+export const generateDeliveryOtp = async (req: any, res: Response): Promise<void> => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const order = await prisma.order.findFirst({ where: { id, userId } });
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    if (order.status === 'DELIVERED') {
+      res.status(400).json({ error: 'Order is already delivered' });
+      return;
+    }
+
+    // Generate a 4-digit delivery OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otpExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // Valid for 1 hour
+
+    await prisma.order.update({
+      where: { id },
+      data: {
+        deliveryOtp: otp,
+        deliveryOtpAt: otpExpiresAt,
+        status: 'OUT_FOR_DELIVERY',
+      },
+    });
+
+    // Log OTP to console (in production this goes to delivery agent app)
+    console.log(`\n==================================================`);
+    console.log(`[DELIVERY OTP] Order: ${order.orderNumber}`);
+    console.log(`OTP: ${otp} | Valid for 1 hour`);
+    console.log(`==================================================\n`);
+
+    res.json({
+      message: 'Delivery OTP generated successfully',
+      otp,
+      expiresAt: otpExpiresAt,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Server error generating delivery OTP' });
+  }
+};
+
+export const confirmDelivery = async (req: any, res: Response): Promise<void> => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { otp } = req.body;
+
+    if (!otp) {
+      res.status(400).json({ error: 'Delivery OTP is required' });
+      return;
+    }
+
+    const order = await prisma.order.findFirst({ where: { id, userId } });
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    if (order.status === 'DELIVERED') {
+      res.status(400).json({ error: 'Order is already delivered' });
+      return;
+    }
+
+    if (!order.deliveryOtp || !order.deliveryOtpAt) {
+      res.status(400).json({ error: 'Delivery OTP has not been generated for this order. Request the agent to generate it first.' });
+      return;
+    }
+
+    if (new Date() > order.deliveryOtpAt) {
+      res.status(400).json({ error: 'Delivery OTP has expired. Please request a new one.' });
+      return;
+    }
+
+    if (order.deliveryOtp !== String(otp)) {
+      res.status(400).json({ error: 'Invalid delivery OTP. Please check and try again.' });
+      return;
+    }
+
+    // Confirm delivery
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        status: 'DELIVERED',
+        deliveryOtp: null,
+        deliveryOtpAt: null,
+      },
+    });
+
+    res.json({
+      message: 'Delivery confirmed successfully!',
+      order: updatedOrder,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Server error confirming delivery' });
+  }
+};

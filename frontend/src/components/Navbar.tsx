@@ -64,8 +64,9 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Catalog', href: '/catalog' },
-    { name: 'Farmers', href: '/#farmers' },
-    { name: 'About', href: '/#about' },
+    { name: 'Subscriptions', href: '/subscriptions' },
+    { name: 'Orders', href: '/orders' },
+    { name: 'Vendors Profile', href: '/vendor' },
   ];
 
   return (
@@ -219,11 +220,18 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="pt-4 border-t border-organic-100 mt-4 space-y-2">
                 <Link
-                  href="/profile"
+                  href="/orders"
                   onClick={() => setIsOpen(false)}
                   className="block px-3 py-3 rounded-md text-base font-semibold text-organic-700 dark:text-organic-300 hover:bg-organic-50 dark:hover:bg-slate-900/50 transition-colors"
                 >
-                  My Profile ({user?.name})
+                  My Orders
+                </Link>
+                <Link
+                  href="/subscriptions"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-3 rounded-md text-base font-semibold text-organic-700 dark:text-organic-300 hover:bg-organic-50 dark:hover:bg-slate-900/50 transition-colors"
+                >
+                  Subscriptions
                 </Link>
                 {user?.role === 'ADMIN' && (
                   <Link

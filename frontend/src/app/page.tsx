@@ -26,6 +26,7 @@ interface Product {
   imageUrl: string;
   farmerName: string;
   certification: string;
+  inventory?: { stockLevel: number } | null;
 }
 
 export default function LandingPage() {
@@ -34,6 +35,9 @@ export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItem, setAddedItem] = useState<string | null>(null);
   const [currentDishIndex, setCurrentDishIndex] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
+  const [currentBanner, setCurrentBanner] = useState(0);
 
   const heroDishes = [
     {
@@ -106,6 +110,57 @@ export default function LandingPage() {
   }, [typedText, isDeleting, loopNum, typingSpeed]);
 
 
+  // Fetch live featured products from API; fall back to static data if offline
+  useEffect(() => {
+    const loadFeatured = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/products/featured');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const mapped: Product[] = data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              slug: p.slug,
+              description: p.description,
+              price: p.price,
+              discountPrice: p.discountPrice,
+              unit: p.unit,
+              imageUrl: p.images?.[0]?.url || 'https://images.unsplash.com/photo-1540420773420-3366772f4999',
+              farmerName: p.farmer?.user?.name || p.farmer?.farmName || 'Local Farmer',
+              certification: p.farmer?.certifications?.[0]?.name || 'Organic',
+              inventory: p.inventory,
+            }));
+            setFeaturedProducts(mapped);
+            return;
+          }
+        }
+      } catch (_) {
+        // API offline — use static fallback below
+      }
+      setFeaturedProducts(staticFeaturedProducts);
+    };
+
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/promotions/banners');
+        if (res.ok) setBanners(await res.json());
+      } catch (err) {}
+    };
+
+    loadFeatured();
+    fetchBanners();
+  }, []);
+
+  // Banner Auto-rotation
+  useEffect(() => {
+    if (banners.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentBanner(prev => (prev + 1) % banners.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
   // Core fallback landing page data
   const categories: Category[] = [
     {
@@ -138,7 +193,8 @@ export default function LandingPage() {
     },
   ];
 
-  const featuredProducts: Product[] = [
+  // Static fallback featured products (used if API is offline)
+  const staticFeaturedProducts: Product[] = [
     {
       id: 'p1',
       name: 'Organic Palak (Spinach)',
@@ -213,7 +269,35 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="w-full">
+    <main className="min-h-screen bg-slate-50 font-sans selection:bg-organic-200">
+      
+      {/* Promotional Banners */}
+      {banners.length > 0 && (
+        <div className="w-full bg-organic-700 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.1),transparent_50%)] pointer-events-none" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-between text-white text-xs sm:text-sm font-bold h-6">
+              <div className="animate-fade-in truncate flex-grow">
+                <Sparkles className="h-4 w-4 inline-block mr-2 text-organic-200" />
+                {banners[currentBanner]?.title}
+              </div>
+              {banners[currentBanner]?.linkUrl && (
+                <Link href={banners[currentBanner].linkUrl} className="shrink-0 bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider transition-colors ml-4">
+                  Shop Now
+                </Link>
+              )}
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div className="absolute bottom-0 left-0 h-0.5 bg-white/20 w-full">
+            <div className="h-full bg-organic-300 transition-all duration-[4000ms] ease-linear w-full origin-left" style={{ transform: 'scaleX(1)', animation: 'progress 4s linear infinite' }} />
+          </div>
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+          `}} />
+        </div>
+      )}
+
       {/* 1. Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-organic-50 via-cream-200 to-organic-100/50 dark:from-slate-950 dark:via-organic-900/10 dark:to-slate-950 py-20 lg:py-32 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 opacity-40 pointer-events-none">
@@ -466,13 +550,16 @@ export default function LandingPage() {
 
                     <button
                       onClick={() => handleAddToCart(prod)}
+                      disabled={!!(prod.inventory && prod.inventory.stockLevel <= 0)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
-                        addedItem === prod.id
+                        prod.inventory && prod.inventory.stockLevel <= 0
+                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
+                          : addedItem === prod.id
                           ? 'bg-organic-600 text-white'
                           : 'bg-organic-100 hover:bg-organic-500 text-organic-700 hover:text-white border border-organic-200 dark:bg-organic-900/50 dark:hover:bg-organic-600 dark:text-organic-300 dark:border-organic-800'
                       }`}
                     >
-                      {addedItem === prod.id ? 'Added!' : 'Add to Cart'}
+                      {prod.inventory && prod.inventory.stockLevel <= 0 ? 'Out of Stock' : addedItem === prod.id ? 'Added!' : 'Add to Cart'}
                     </button>
                   </div>
                 </div>
@@ -554,6 +641,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }

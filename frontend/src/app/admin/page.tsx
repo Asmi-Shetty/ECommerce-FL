@@ -4,16 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { LayoutDashboard, ShoppingCart, Users, Leaf, ArrowUpRight, Check, ShieldCheck, XCircle, Settings, AlertTriangle, Package, Calendar } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Leaf, ArrowUpRight, Check, ShieldCheck, XCircle, Settings, AlertTriangle, Package, Calendar, Ticket, Megaphone } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { isAuthenticated, user, token } = useSelector((state: RootState) => state.auth);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'vendors' | 'inventory'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'vendors' | 'inventory' | 'support' | 'promotions'>('dashboard');
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
   const [stats, setStats] = useState({ revenue: 12480, orders: 42, customers: 31, vendors: 2 });
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +50,15 @@ export default function AdminDashboardPage() {
         if (ordRes.ok && prodRes.ok) {
           setOrders(ordData);
           setProducts(prodData);
+          
+          try {
+            const [ticketRes, bannerRes] = await Promise.all([
+              fetch('http://localhost:5000/api/support/tickets', { headers: { Authorization: `Bearer ${token}` } }),
+              fetch('http://localhost:5000/api/promotions/banners')
+            ]);
+            if (ticketRes.ok) setTickets(await ticketRes.json());
+            if (bannerRes.ok) setBanners(await bannerRes.json());
+          } catch(e) {}
           
           // Calculate dynamic stats
           const totalRev = ordData.reduce((acc: number, o: any) => acc + o.total, 0);
@@ -87,7 +98,9 @@ export default function AdminDashboardPage() {
     { name: 'Products Catalog', id: 'products', icon: Leaf },
     { name: 'Orders Dispatch', id: 'orders', icon: ShoppingCart },
     { name: 'Farmers & KYC', id: 'vendors', icon: Users },
-    { name: 'Stock Levels', id: 'inventory', icon: Package }
+    { name: 'Stock Levels', id: 'inventory', icon: Package },
+    { name: 'Support', id: 'support', icon: Ticket },
+    { name: 'Promotions', id: 'promotions', icon: Megaphone }
   ];
 
   return (
@@ -446,6 +459,59 @@ export default function AdminDashboardPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+          {/* Support Tickets Tab */}
+          {activeTab === 'support' && (
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-left space-y-6">
+              <h3 className="font-serif font-bold text-lg text-slate-850 border-b border-slate-100 pb-4">Customer Support Tickets</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left text-slate-500">
+                  <thead className="bg-slate-50 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3.5">User</th>
+                      <th className="px-4 py-3.5">Subject</th>
+                      <th className="px-4 py-3.5">Type</th>
+                      <th className="px-4 py-3.5">Status</th>
+                      <th className="px-4 py-3.5">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tickets.map(t => (
+                      <tr key={t.id} className="border-b border-slate-100">
+                        <td className="px-4 py-4 font-bold">{t.user?.name}</td>
+                        <td className="px-4 py-4">{t.subject}</td>
+                        <td className="px-4 py-4">{t.type}</td>
+                        <td className="px-4 py-4 font-bold text-amber-600">{t.status}</td>
+                        <td className="px-4 py-4"><button className="text-organic-600 font-bold hover:underline" onClick={() => alert('Chat interface locked for MVP')}>Reply</button></td>
+                      </tr>
+                    ))}
+                    {tickets.length === 0 && <tr><td colSpan={5} className="p-4 text-center">No active tickets.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Promotions Tab */}
+          {activeTab === 'promotions' && (
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-left space-y-6">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+                <h3 className="font-serif font-bold text-lg text-slate-850">Promotional Banners</h3>
+                <button className="bg-organic-500 text-white font-bold px-4 py-2 rounded-xl text-xs" onClick={() => alert('Add Banner locked for MVP')}>+ Add Banner</button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {banners.map(b => (
+                  <div key={b.id} className="border border-slate-200 rounded-xl overflow-hidden relative">
+                    <img src={b.imageUrl} className="w-full h-32 object-cover" />
+                    <div className="p-3 bg-white">
+                      <p className="font-bold text-slate-800">{b.title}</p>
+                      <button className="text-red-500 font-bold text-[10px] uppercase mt-2">Delete</button>
+                    </div>
+                  </div>
+                ))}
+                {banners.length === 0 && <div className="p-4 text-center text-slate-400 font-bold col-span-2">No promotional banners active.</div>}
               </div>
             </div>
           )}

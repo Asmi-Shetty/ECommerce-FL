@@ -3,11 +3,17 @@ import prisma from '../config/db';
 
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { category, search, minPrice, maxPrice, sortBy } = req.query;
+    const { category, search, minPrice, maxPrice, sortBy, inStock } = req.query;
 
     const whereClause: any = {
       isActive: true,
     };
+
+    if (inStock === 'true') {
+      whereClause.inventory = {
+        stockLevel: { gt: 0 },
+      };
+    }
 
     if (category) {
       whereClause.category = {
@@ -142,5 +148,35 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
     res.json(categories);
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Server error loading categories' });
+  }
+};
+
+export const getFeaturedProducts = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        isFeatured: true,
+        isActive: true,
+      },
+      include: {
+        images: true,
+        category: true,
+        inventory: {
+          select: { stockLevel: true },
+        },
+        farmer: {
+          include: {
+            user: { select: { name: true } },
+            certifications: { take: 1 },
+          },
+        },
+      },
+      take: 8,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(products);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Server error loading featured products' });
   }
 };
